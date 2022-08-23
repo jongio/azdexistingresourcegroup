@@ -12,19 +12,23 @@ param location string
 @description('Id of the user or app to assign application roles')
 param principalId string = ''
 
+@maxLength(90)
+@description('Name of the the resource group to provision resources to.')
+param resourceGroupName string = ''
+
 var resourceToken = toLower(uniqueString(subscription().id, name, location))
 var tags = { 'azd-env-name': name }
 var abbrs = loadJsonContent('abbreviations.json')
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: '${abbrs.resourcesResourceGroups}${name}'
+resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+  name: empty(resourceGroupName) ? '${abbrs.resourcesResourceGroups}${name}' : resourceGroupName
   location: location
   tags: tags
 }
 
 module resources 'resources.bicep' = {
   name: 'resources'
-  scope: resourceGroup
+  scope: rg
   params: {
     location: location
     principalId: principalId
@@ -33,6 +37,7 @@ module resources 'resources.bicep' = {
   }
 }
 
+output AZURE_RESOURCE_GROUP string = rg.name
 output AZURE_COSMOS_CONNECTION_STRING_KEY string = resources.outputs.AZURE_COSMOS_CONNECTION_STRING_KEY
 output AZURE_COSMOS_DATABASE_NAME string = resources.outputs.AZURE_COSMOS_DATABASE_NAME
 output AZURE_KEY_VAULT_ENDPOINT string = resources.outputs.AZURE_KEY_VAULT_ENDPOINT

@@ -31,19 +31,49 @@ The following prerequisites are required to use this application. Please ensure 
 
 The fastest way for you to get this application up and running on Azure is to use the `azd up` command. This single command will create and configure all necessary Azure resources - including access policies and roles for your account and service-to-service communication with Managed Identities.
 
-1. Open a terminal, create a new empty folder, and change into it.
-1. Run the following command to initialize the project, provision Azure resources, and deploy the application code.
+1. Open a terminal
+2. Clone this repo `git clone https://github.com/jongio/azdexistingresourcegroup`
+3. CD to the repo's root folder
+4. Resource group
+    
+    By default, azd will create a new resource group. If you want to use an existing resource group, then follow these steps:
 
-```bash
-azd up --template todo-nodejs-mongo
-```
+      - Initialize a new azd environment
+
+        ```bash
+        azd env new
+        ```
+
+    - Create or update resource group
+
+      If you haven't already created a resource group, then use the following to do so.  
+
+      ```bash
+      az group create -l {your location} -n {your resource group name} --tags azd-env-name={your env name}
+      ```
+
+      If you already have a resource group, then add the `azd-env-name` tag
+
+      ```bash
+      az group update -n {your resource group name} --tags azd-env-name={your env name}
+      ```
+
+    - Set resource group name in azd environment
+
+      ```bash
+      azd env set AZURE_RESOURCE_GROUP {your resource group name}
+      ```
+5. Provision Azure resources and deploy the application code.
+
+    ```bash
+    azd up
+    ```
 
 You will be prompted for the following information:
 
 - `Environment Name`: This will be used as a prefix for the resource group that will be created to hold all Azure resources. This name should be unique within your Azure subscription.
 - `Azure Location`: The Azure location where your resources will be deployed.
 - `Azure Subscription`: The Azure Subscription where your resources will be deployed.
-
 > NOTE: This may take a while to complete as it executes three commands: `azd init` (initializes environment), `azd provision` (provisions Azure resources), and `azd deploy` (deploys application code). You will see a progress indicator as it provisions and deploys your application.
 
 When `azd up` is complete it will output the following URLs:
